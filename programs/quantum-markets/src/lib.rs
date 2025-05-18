@@ -7,7 +7,6 @@ pub mod instructions;
 use crate::state::*;
 use crate::instructions::*;
 
-
 declare_id!("ASnYjL8hE148BWM35vQ85ppjc7rRK5YDLENZhPyW2D7w");
 
 #[program]
@@ -49,6 +48,15 @@ pub mod quantum_markets {
         // 1. Init the three mints (VUSD, YES, NO) via CPI as shown above  
         // 2. Mint initial liquidity according to min_deposit  
         // 3. Write Proposal { id, market, creator, vusd_mint, yes_mint, no_mint, data }  
+        let p = &mut ctx.accounts.proposal;
+        p.id = proposal_id;
+        p.market = ctx.accounts.market.key();
+        p.created_at = Clock::get()?.unix_timestamp;
+        p.creator = *ctx.accounts.creator.key;
+        p.vusd_mint = ctx.accounts.vusd_mint.key();
+        p.yes_mint = ctx.accounts.yes_mint.key();
+        p.no_mint = ctx.accounts.no_mint.key();
+        p.data = data;
         Ok(())
     }
 
