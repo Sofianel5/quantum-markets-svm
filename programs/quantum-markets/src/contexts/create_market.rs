@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use anchor_lang::{prelude::*};
 use crate::errors::QuantumError;
 use crate::state::config::{MarketStatus, MarketConfig};
