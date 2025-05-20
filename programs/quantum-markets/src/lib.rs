@@ -12,6 +12,10 @@ declare_id!("ASnYjL8hE148BWM35vQ85ppjc7rRK5YDLENZhPyW2D7w");
 pub mod quantum_markets {
     use super::*;
 
+    pub fn initialize_global(ctx: Context<InitializeGlobal>) -> Result<()> {
+        ctx.accounts.initialize_global()
+    }
+
     pub fn create_market(
         ctx: Context<CreateMarket>,
         min_deposit: u64,
