@@ -1,8 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { QuantumMarkets } from "../target/types/quantum_markets";
-import { PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
-import { createMint, ASSOCIATED_TOKEN_PROGRAM_ID, mintTo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { QuantumMarkets, IDL } from "../target/types/quantum_markets"
+import { PublicKey, Keypair } from "@solana/web3.js";
+import { createMint } from "@solana/spl-token";
 import { assert } from "chai";
 
 describe("quantum-markets", () => {
@@ -68,14 +67,9 @@ describe("quantum-markets", () => {
         /* title */ "My First Market"
       )
       .accounts({
-        global: globalPda,
         payer: payer.publicKey,
         rewardMint,
         resolver: payer.publicKey,   // for now just use yourself
-        market: marketPda,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .rpc();
 
