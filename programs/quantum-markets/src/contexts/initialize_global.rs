@@ -17,7 +17,7 @@ pub struct InitializeGlobal<'info> {
 }
 
 impl<'info> InitializeGlobal<'info> {
-  pub fn initialize_global(&mut self) -> Result<()> {
+  pub fn handler(&mut self) -> Result<()> {
     self.global.next_id = 0;
     Ok(())
   }

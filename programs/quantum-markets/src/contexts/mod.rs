@@ -1,6 +1,14 @@
 pub mod create_market;
 pub mod initialize_global;
 pub mod create_proposal;
+pub mod deposit_to_market;
+pub mod mint_yes_no;
+pub mod redeem_yes_no;
+pub mod claim_for_proposal;
 pub use create_market::*;
 pub use initialize_global::*;
 pub use create_proposal::*;
+pub use deposit_to_market::*;
+pub use mint_yes_no::*;
+pub use redeem_yes_no::*;
+pub use claim_for_proposal::*;

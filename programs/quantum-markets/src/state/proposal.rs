@@ -24,12 +24,12 @@ pub struct ProposalConfig {
 }
 
 impl ProposalConfig {
-    pub const SIZE: usize =
-          DISCRIMINATOR
-        + U64_L * 2         // id + market_id
-        + U64_L             // created_at
-        + PUBKEY_L * 4      // creator + 3 mint addresses
-        + PUBKEY_L * 2      // pool keys
-        + STRING_PREFIX + 256   // data blob (adjust as you like)
-        + U8_L;             // bump
+   pub const SIZE: usize =
+          U64_L * 2          // id, market_id
+        + U64_L              // created_at
+        + PUBKEY_L * 5       // creator + 3 mints + bump-packed in struct above
+        + PUBKEY_L * 2       // yes_pool, no_pool
+        + 4                  // Vec length prefix
+        + MAX_DATA           // data bytes
+        + U8_L;              // bump
 }
