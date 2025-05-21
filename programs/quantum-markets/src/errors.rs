@@ -6,4 +6,6 @@ pub enum QuantumError {
     DefaultError,
     #[msg("Overflow detected.")]
     Overflow,
+    #[msg("Deposit is too low.")]
+    MinDeposit,
 }
