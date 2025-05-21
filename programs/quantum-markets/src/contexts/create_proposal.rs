@@ -3,6 +3,7 @@ use anchor_spl::token::{Mint, TokenAccount, Token, MintTo, mint_to};
 use crate::state::config::MarketConfig;
 use crate::state::global::GlobalState;
 use crate::state::proposal::ProposalConfig;
+use crate::state::deposit::DepositRecord;
 use crate::errors::QuantumError;
 
 #[derive(Accounts)]
@@ -23,9 +24,9 @@ pub struct CreateProposal<'info> {
     #[account(
         mut,
         seeds = [b"deposit", market.key().as_ref(), payer.key().as_ref()],
-        bump
+        bump,
     )]
-    pub user_deposit: Account<'info, TokenAccount>,
+    pub user_deposit: Account<'info, DepositRecord>,
 
     /// reward token mint (same as market.market_token)
     pub reward_mint: Account<'info, Mint>,
@@ -42,7 +43,7 @@ pub struct CreateProposal<'info> {
     #[account(
         init,
         payer = payer,
-        seeds = [b"vusd".as_ref(), &global.next_id.to_le_bytes().as_ref()],
+        seeds = [b"vusd".as_ref(), &global.next_id.to_le_bytes()],
         bump,
         mint::decimals = 6,
         mint::authority = proposal_auth
@@ -52,7 +53,7 @@ pub struct CreateProposal<'info> {
     #[account(
         init,
         payer = payer,
-        seeds = [b"yes_mint".as_ref(), &global.next_id.to_le_bytes().as_ref()],
+        seeds = [b"yes_mint".as_ref(), &global.next_id.to_le_bytes()],
         bump,
         mint::decimals = 0,
         mint::authority = proposal_auth
@@ -62,7 +63,7 @@ pub struct CreateProposal<'info> {
     #[account(
         init,
         payer = payer,
-        seeds = [b"no_mint".as_ref(), &global.next_id.to_le_bytes().as_ref()],
+        seeds = [b"no_mint".as_ref(), &global.next_id.to_le_bytes()],
         bump,
         mint::decimals = 0,
         mint::authority = proposal_auth
@@ -76,7 +77,7 @@ pub struct CreateProposal<'info> {
         associated_token::mint = vusd_mint,
         associated_token::authority = proposal_auth
     )]
-    pub vusd_vault: Account<'info, TokenAccount>,
+    pub vusd_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -84,7 +85,7 @@ pub struct CreateProposal<'info> {
         associated_token::mint = yes_mint,
         associated_token::authority = proposal_auth
     )]
-    pub yes_vault: Account<'info, TokenAccount>,
+    pub yes_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -92,7 +93,7 @@ pub struct CreateProposal<'info> {
         associated_token::mint = no_mint,
         associated_token::authority = proposal_auth
     )]
-    pub no_vault: Account<'info, TokenAccount>,
+    pub no_vault: Box<Account<'info, TokenAccount>>,
 
     // ============== user ATAs to receive inventory ==============
     #[account(
@@ -101,7 +102,7 @@ pub struct CreateProposal<'info> {
         associated_token::mint = yes_mint,
         associated_token::authority = payer
     )]
-    pub user_yes: Account<'info, TokenAccount>,
+    pub user_yes: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init_if_needed,
@@ -109,7 +110,7 @@ pub struct CreateProposal<'info> {
         associated_token::mint = no_mint,
         associated_token::authority = payer
     )]
-    pub user_no: Account<'info, TokenAccount>,
+    pub user_no: Box<Account<'info, TokenAccount>>,
 
     /// PDA that will sign `mint_to` CPIs
     /// CHECK: only used as mint_authority
@@ -135,7 +136,7 @@ pub struct CreateProposal<'info> {
 }
 
 impl<'info> CreateProposal<'info> {
-    pub fn create_proposal(
+    pub fn handler(
         &mut self,
         bumps: CreateProposalBumps,     // { proposal_auth, proposal, vusd_mint, yes_mint, … }
         data: Vec<u8>,                 // opaque proposal blob
@@ -146,17 +147,9 @@ impl<'info> CreateProposal<'info> {
         require!(claimable >= min_d, QuantumError::MinDeposit);
 
         // burn (lock) the minDeposit from user_deposit
-        anchor_spl::token::burn(
-            CpiContext::new(
-                self.token_program.to_account_info(),
-                anchor_spl::token::Burn {
-                    mint: self.reward_mint.to_account_info(),
-                    from: self.user_deposit.to_account_info(),
-                    authority: self.payer.to_account_info(),
-                },
-            ),
-            min_d,
-        )?;
+        self.user_deposit.amount = claimable
+            .checked_sub(min_d)
+            .ok_or(QuantumError::Underflow)?;
 
         // 2) split D (min_d) exactly like Solidity logic
         let burn_total = min_d * 2 / 3;          // D * 2/3  as YES+NO
@@ -177,6 +170,7 @@ impl<'info> CreateProposal<'info> {
             ),
             vusd_to_mint,
         )?;
+
 
         // 4) mint YES+NO into vault AND to caller
         let mint_yes = |to: &Account<'info, TokenAccount>, amount| -> Result<()> {

@@ -8,7 +8,9 @@ use anchor_spl::token::Mint;
 pub struct CreateMarket<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
     pub reward_mint: Account<'info, Mint>,
+
     /// CHECK: this is just a Pubkey to store the on-chain resolver address;
     pub resolver: UncheckedAccount<'info>,
     #[account(
@@ -29,7 +31,7 @@ pub struct CreateMarket<'info> {
 }
 
 impl<'info> CreateMarket<'info> {
-    pub fn create_market(
+    pub fn handler(
         &mut self,
         bumps: CreateMarketBumps,
         min_deposit: u64,
