@@ -4,7 +4,6 @@ use crate::state::config::{MarketStatus, MarketConfig};
 use crate::state::global::GlobalState;
 use anchor_spl::token::Mint;
 
-
 #[derive(Accounts)]
 pub struct CreateMarket<'info> {
     #[account(mut)]
@@ -32,7 +31,7 @@ pub struct CreateMarket<'info> {
 impl<'info> CreateMarket<'info> {
     pub fn create_market(
         &mut self,
-        bumps: &CreateMarketBumps,
+        bumps: CreateMarketBumps,
         min_deposit: u64,
         strike_price: u64,
         title: String,

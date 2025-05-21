@@ -60,18 +60,18 @@ describe("quantum-markets", () => {
     )
 
 
-    await program.methods
-      .createMarket(
-        /* minDeposit */ new anchor.BN(1000),
-        /* strikePrice */ new anchor.BN(42),
-        /* title */ "My First Market"
-      )
-      .accounts({
-        payer: payer.publicKey,
-        rewardMint,
-        resolver: payer.publicKey,   // for now just use yourself
-      })
-      .rpc();
+  await program.methods
+    .createMarket(
+      /* minDeposit */ new anchor.BN(1000),
+      /* strikePrice */ new anchor.BN(42),
+      /* title */ "My First Market"
+    )
+    .accounts({
+      payer: payer.publicKey,
+      rewardMint,
+      resolver: payer.publicKey,   // for now just use yourself
+    })
+    .rpc();
 
     // fetch and assert
     const m = await program.account.marketConfig.fetch(marketPda);

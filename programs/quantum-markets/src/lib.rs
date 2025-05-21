@@ -22,8 +22,13 @@ pub mod quantum_markets {
         strike_price: u64,
         title: String,
     ) -> Result<()> {
-        ctx.accounts.create_market(&ctx.bumps, min_deposit, strike_price, title)
+        ctx.accounts.create_market(ctx.bumps, min_deposit, strike_price, title)
+    }
+
+    pub fn create_proposal(
+        ctx: Context<CreateProposal>,
+        data: Vec<u8>,
+    ) -> Result<()> {
+        ctx.accounts.create_proposal(ctx.bumps, data)
     }
 }
-
-
